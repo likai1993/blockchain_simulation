@@ -4,4 +4,5 @@ setup:
 	sudo python2.7 -m pip install python-jsonrpc
 clean:
 	rm -rf ./Data/
+	find ./ -name '*.pyc' |xargs rm -rf
 	mkdir -p ./Data/Keystore
