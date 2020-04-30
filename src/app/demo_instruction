@@ -1,0 +1,9 @@
+
+# create account and submit transaction
+python3 account.py 
+
+
+# start mining
+python mining.py
+
+
