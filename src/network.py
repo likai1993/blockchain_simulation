@@ -187,7 +187,7 @@ class NCProtocol(Protocol):
 
     def receiveTx(self, msg):
         try:
-            tx = messages.read_message(msg)['tx']
+            tx = messages.read_message_noverify(msg)['tx']
             _print(" [<] Recieved txMsg from peer " + self.remote_nodeid)
 
         except messages.InvalidSignatureError:
@@ -196,7 +196,7 @@ class NCProtocol(Protocol):
 
     def receiveBlock(self, msg):
         try:
-            tx = messages.read_message(msg)['block']
+            tx = messages.read_message_noverify(msg)['block']
             _print(" [<] Recieved blockMsg from peer " + self.remote_nodeid)
 
         except messages.InvalidSignatureError:

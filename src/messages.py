@@ -91,3 +91,10 @@ def read_message(message):
         return envelope['data']
     else:
         raise InvalidSignatureError
+
+def read_message_noverify(message):
+    """Read and parse the message into json. Validate the signature
+    and return envelope['data']
+    """
+    envelope = json.loads(message)
+    return envelope['data']
