@@ -47,7 +47,7 @@ class Account():
         bufferSize = 64 * 1024
         privateKey, publicKey = self.generate_keys()
         keys = {'publicKey': publicKey, 'privateKey':privateKey}
-        path = 'Data/Keystorage/'
+        path = 'Data/Keystore/'
         fileName = path + str(self.name)+'tmp'
         with open(fileName, 'w') as json_file:
             json.dump(keys, json_file)

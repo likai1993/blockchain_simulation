@@ -38,7 +38,7 @@ class setUpVPNClient(object):
                     pkt = IP(data)
                     #_print(" [VPN] server: {} --> {}".format(pkt.src,pkt.dst))
                     if len(data) > 0:
-                        _print(" [VPN] to tun", len(data))
+                        #_print(" [VPN] to tun", len(data))
                         os.write(tun, data)
                 if fd is tun:
                     packet = os.read(tun, 4096)
