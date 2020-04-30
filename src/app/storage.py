@@ -184,7 +184,7 @@ class AccountDB(BaseDB):
                 print("findit")
                 one = item
                 break
-        return one
+        return one["balance"]
 
 
 
@@ -242,3 +242,20 @@ class UnTransactionDB(TransactionDB):
             txs = [txs]
         for tx in txs:
             self.hash_insert(tx)
+
+    def find(self, hash):
+        one = {}
+        for item in self.find_all():
+            if item['hash'] == hash:
+                one = item
+                break
+        return one
+
+    def delete(self, hash):
+	data = []
+	for item in self.find_all():
+            if item['hash'] == hash:
+                continue
+            else:
+                data.append(item)
+        self.insert(data)

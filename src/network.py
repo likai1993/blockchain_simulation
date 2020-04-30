@@ -2,6 +2,10 @@ from datetime import datetime
 from time import time
 from functools import partial
 from log import _print
+import json
+from storage import BlockChainDB, UnTransactionDB, TransactionDB
+
+
 
 from twisted.internet import reactor
 from twisted.internet.protocol import Protocol, Factory
@@ -187,21 +191,26 @@ class NCProtocol(Protocol):
 
     def receiveTx(self, msg):
         try:
-            tx = messages.read_message_noverify(msg)['tx']
+            newtx = messages.read_message_noverify(msg)['tx']
+            newtx = newtx.to_dict()
+            UnTransactionDB().insert(newtx)
             _print(" [<] Recieved txMsg from peer " + self.remote_nodeid)
-
         except messages.InvalidSignatureError:
             _print(" [!] ERROR: Invalid tx sign ", self.remote_ip)
             self.transport.loseConnection()
 
     def receiveBlock(self, msg):
         try:
-            tx = messages.read_message_noverify(msg)['block']
+            newBlock = messages.read_message_noverify(msg)['block']
+            newBlock = newBlock.to_dict()
+            newTransactions = newBlock['tx']
             _print(" [<] Recieved blockMsg from peer " + self.remote_nodeid)
-
+            BlockChainDB().insert(newBlock.to_dict())
+            TransactionDB().insert(newTransactions.to_dict())
+            for tx in newTransactions:
+                UnTransactionDB.delete(tx['hash'])            
         except messages.InvalidSignatureError:
             _print(" [!] ERROR: Invalid block sign ", self.remote_ip)
-            self.transport.loseConnection()
 
     def broadcastTx(self, tx):
         _print(" [P2P] broadcasting tx", tx)

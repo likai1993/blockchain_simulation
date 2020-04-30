@@ -3,7 +3,7 @@ import thread
 from log import _print
 from account import Account
 from mining import Miner
-from storage import BlockChainDB, AccountDB, TransactionDB
+from storage import BlockChainDB, AccountDB, TransactionDB,UnTransactionDB
 
 class RequestHandler(pyjsonrpc.HttpRequestHandler):
 
@@ -34,15 +34,21 @@ class RequestHandler(pyjsonrpc.HttpRequestHandler):
     # read-only
     @pyjsonrpc.rpcmethod
     def getBalance(self, address): #publickey
-        return AccountDB().getBalance(address)
+        return AccountDB().getAccountBalance(address)
 
     @pyjsonrpc.rpcmethod
     def getTransaction(self, _hash):
-        return TransactionDB().find(_hash)
+        tx = UnTransactionDB().find(_hash)
+        if tx == {}:
+            print "not in UTXpool"
+            tx = TransactionDB().find(_hash)
+            if tx == {}:
+                return  "no Record"
+        return tx	
 
     @pyjsonrpc.rpcmethod
-    def getBlock(self, height):
-        return BlockChainDB().findIndex(height)
+    def getBlock(self, _height):
+        return BlockChainDB().findIndex(_height)
 
     @pyjsonrpc.rpcmethod
     def getBlockByHash(self, _hash):
@@ -55,7 +61,7 @@ class RPC(object):
         server_address = (ip, port),
         RequestHandlerClass = RequestHandler)
 
-        http_server.account = Account()
+        http_server.account = Account(protocol)
         http_server.miner = Miner(protocol)
         _print(" [RPC] Starting RPC server ...")
         _print(" [RPC] URL: http://" + ip + ":" + str(port))

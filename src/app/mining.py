@@ -6,7 +6,6 @@ from account import Account
 from storage import BlockChainDB, UnTransactionDB, TransactionDB
 import json
 
-
 from twisted.internet import reactor
 from log import _print
 import network
@@ -26,7 +25,7 @@ class Miner():
 
     def gensisBlock(self):
         reward_transaction = self.reward()
-        gensis = Block(0, int(time.time()), [reward_transaction.dump()], "")
+        gensis = Block(0, int(time.time()), [reward_transaction.to_dict()], "")
         nouce = gensis.pow()
         gensis.make(nouce)
         print(gensis.to_dict())
@@ -42,7 +41,7 @@ class Miner():
         untxdb = UnTransactionDB()
         rewardTx = self.reward()
         newTransactions = untxdb.find_all()
-        newTransactions.append(rewardTx.dump())
+        newTransactions.append(rewardTx.to_dict())
         untxdb.clear()
         newBlock = Block(last_block['index'] + 1, int(time.time()), newTransactions, last_block['hash'])
         newBlock.miner = self.publicKey

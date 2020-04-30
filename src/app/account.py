@@ -17,16 +17,22 @@ from storage import UnTransactionDB, AccountDB
 from transaction import Transaction
 import file_enc_dec as filecrypto
 
+from twisted.internet import reactor
+from log import _print
+import network
+from network import NCProtocol
+
 # encryption/decryption buffer size - 64K
 
 class Account():
 
-    def __init__(self, name=""):
+    def __init__(self, protocol, name=""):
         self.name = name
         self.publicKey = ""
         self.privateKey = ""
+        self.protocol = protocol
 
-    def dump(self):
+    def to_dict(self):
         return self.__dict__
 
     def generate_keys(self):
@@ -112,8 +118,10 @@ class Account():
 
     def submitTransaction(self, transaction):
         if self.verify_transaction(transaction) is True:
-            UnTransactionDB().insert(transaction.dump())
-            print("new Transaction inserted")
+            UnTransactionDB().insert(transaction.to_dict())
+            _print(" [TX] Created new transaction")
+            reactor.callFromThread(self.protocol.broadcastTx, transaction.to_dict())
+        return transaction.to_dict()['hash']
 
     def getBalance(self, publicKey):
         return AccountDB().getAccountBalance(publicKey)

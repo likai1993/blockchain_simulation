@@ -9,7 +9,7 @@ class Transaction():
             self.signature = ""
             self.hash = ""
 
-        def dump(self):
+        def to_dict(self):
             return self.__dict__
 
 #def getTransaction(hash_v):
