@@ -61,7 +61,7 @@ class Account():
     def unlock(self, name, pwd):
         self.name = name
         bufferSize = 64 * 1024
-        path = 'Data/Keystorage/'
+        path = 'Data/Keystore/'
         fileName = path + str(self.name)
         encFileSize = stat(fileName).st_size
         tmpfile = fileName+"tmp"

@@ -205,7 +205,7 @@ class NCProtocol(Protocol):
             newBlock = newBlock.to_dict()
             newTransactions = newBlock['tx']
             _print(" [<] Recieved blockMsg from peer " + self.remote_nodeid)
-            BlockChainDB().insert(newBlock.to_dict())
+            BlockChainDB().insert(newBlock)
             TransactionDB().insert(newTransactions.to_dict())
             for tx in newTransactions:
                 UnTransactionDB.delete(tx['hash'])            
