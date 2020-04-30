@@ -202,7 +202,6 @@ class NCProtocol(Protocol):
     def receiveBlock(self, msg):
         try:
             newBlock = messages.read_message_noverify(msg)['block']
-            newBlock = newBlock.to_dict()
             newTransactions = newBlock['tx']
             _print(" [<] Recieved blockMsg from peer " + self.remote_nodeid)
             BlockChainDB().insert(newBlock)
