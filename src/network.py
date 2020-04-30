@@ -192,7 +192,6 @@ class NCProtocol(Protocol):
     def receiveTx(self, msg):
         try:
             newtx = messages.read_message_noverify(msg)['tx']
-            newtx = newtx.to_dict()
             UnTransactionDB().insert(newtx)
             _print(" [<] Recieved txMsg from peer " + self.remote_nodeid)
         except messages.InvalidSignatureError:
@@ -205,9 +204,9 @@ class NCProtocol(Protocol):
             newTransactions = newBlock['tx']
             _print(" [<] Recieved blockMsg from peer " + self.remote_nodeid)
             BlockChainDB().insert(newBlock)
-            TransactionDB().insert(newTransactions.to_dict())
+            TransactionDB().insert(newTransactions)
             for tx in newTransactions:
-                UnTransactionDB.delete(tx['hash'])            
+                UnTransactionDB().delete(tx['hash'])            
         except messages.InvalidSignatureError:
             _print(" [!] ERROR: Invalid block sign ", self.remote_ip)
 

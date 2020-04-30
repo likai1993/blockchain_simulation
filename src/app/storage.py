@@ -206,7 +206,7 @@ class TransactionDB(BaseDB):
             txs = [txs]
         for tx in txs:
 
-            if tx['sender'] is 'MINING':
+            if tx['sender'] == 'MINING':
                 self.sig_insert(tx)
                 AccountDB().acc_insert(tx)
             else:

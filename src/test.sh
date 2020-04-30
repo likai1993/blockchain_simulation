@@ -1,0 +1,8 @@
+curl -X POST --data '{"jsonrpc":"2.0","id":2,"method":"createAccount","params":["qi","1234"]}' "http://192.168.53.5:8888"
+curl -X POST --data '{"jsonrpc":"2.0","id":2,"method":"createAccount","params":["kai","1234"]}' "http://192.168.53.5:8888"
+curl -X POST --data '{"jsonrpc":"2.0","id":2,"method":"mining","params":["kai","1234"]}' "http://192.168.53.5:8888"
+curl -X POST --data '{"jsonrpc":"2.0","id":2,"method":"unlock","params":["kai","1234"]}' "http://192.168.53.5:8888"
+curl -X POST --data '{"jsonrpc":"2.0","id":2,"method":"sendTransaction","params":["30819f300d06092a864886f70d010101050003818d0030818902818100df2eedffac40a369ff0fa4c6206a57514ecccec150bbd535b4b06b9b6c0eb5ceef627d4f527a508a0009697a5a1d2c41de441c97b053a0f9acd0dc8840a40a908bbc056c9f5498af188a9f0951f1ff20a742d1ab01f85aaacfb48d03379d1fd22fcbba2a3d6580ad7bf64436f8fdf8cb28bff0e55c3b1a77e606fb2a53e65bcd0203010001","1"]}' "http://192.168.53.5:8888"
+curl -X POST --data '{"jsonrpc":"2.0","id":2,"method":"getTransaction","params":["f8bb4ee6b47ead5f5c226671d6f55027b60b84d01659cfb3bd4de55d5ed2c3d2"]}' "http://192.168.53.5:8888"
+curl -X POST --data '{"jsonrpc":"2.0","id":2,"method":"getBlock","params":[10]}' "http://192.168.53.5:8888"
+curl -X POST --data '{"jsonrpc":"2.0","id":2,"method":"getBalance","params":[""]}' "http://192.168.53.5:8888"
