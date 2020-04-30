@@ -36,7 +36,8 @@ class Account():
         return (binascii.hexlify(private_key.exportKey(format='DER')).decode('ascii'),
                 binascii.hexlify(public_key.exportKey(format='DER')).decode('ascii'))
 
-    def create_account(self, pwd):
+    def create_account(self, name, pwd):
+        self.name = name
         bufferSize = 64 * 1024
         privateKey, publicKey = self.generate_keys()
         keys = {'publicKey': publicKey, 'privateKey':privateKey}
@@ -49,8 +50,10 @@ class Account():
         #print(keys)
         remove(fileName)
         # account transaction...
+	return publicKey
 
-    def unlock_account(self, pwd):
+    def unlock(self, name, pwd):
+        self.name = name
         bufferSize = 64 * 1024
         path = 'Data/Keystorage/'
         fileName = path + str(self.name)

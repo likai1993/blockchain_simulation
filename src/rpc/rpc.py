@@ -1,4 +1,5 @@
 import pyjsonrpc
+import thread
 from log import _print
 from account import Account
 from mining import Miner
@@ -7,53 +8,55 @@ from storage import BlockChainDB, AccountDB, TransactionDB
 class RequestHandler(pyjsonrpc.HttpRequestHandler):
 
     @pyjsonrpc.rpcmethod
-    def createAccount(self, _name, passwd):
-        self.account.name = _name
-        self.account.create_account(passwd)
+    def createAccount(self, _name, _passwd):
+        publicKey = self.server.account.create_account(_name, _passwd)
+	return publicKey
 
     @pyjsonrpc.rpcmethod
-    def unlock(self, _name, passwd):
-        self.account.name = name
-        self.account.unlock(passwd)
+    def unlock(self, _name, _passwd):
+        self.server.account.unlock(_name, _passwd)
         return True
+
+    @pyjsonrpc.rpcmethod
+    def mining(self, _name, _passwd):
+        self.server.account.unlock(_name, _passwd)
+        self.server.miner.publicKey = self.server.account.publicKey
+        thread.start_new_thread(self.server.miner.startMining, ())
+        return True
+
 
     @pyjsonrpc.rpcmethod
     def sendTransaction(self, _to, _amount):
-        transaction = self.account.createTransaction(_to, int(_amount))
-        self.account.sign_transaction(transaction)
-        self.account.submitTransaction(transaction)
-        return True
+        transaction = self.server.account.createTransaction(_to, int(_amount))
+        self.server.account.sign_transaction(transaction)
+        return self.server.account.submitTransaction(transaction)
 
     # read-only
     @pyjsonrpc.rpcmethod
     def getBalance(self, address): #publickey
-        print(AccountDB().getBalance(address))
-        return True
+        return AccountDB().getBalance(address)
 
     @pyjsonrpc.rpcmethod
     def getTransaction(self, _hash):
-        print(TransactionDB().find(_hash))
-        return True
+        return TransactionDB().find(_hash)
 
     @pyjsonrpc.rpcmethod
     def getBlock(self, height):
-        print(BlockChainDB().findIndex(height))
-        return 
+        return BlockChainDB().findIndex(height)
 
     @pyjsonrpc.rpcmethod
     def getBlockByHash(self, _hash):
-        print(BlockChainDB().find(_hash))
-        return 
+        return BlockChainDB().find(_hash)
 
 # Threading HTTP-Server
 class RPC(object):
     def __init__(self, ip, port, protocol):
-        self.http_server = pyjsonrpc.ThreadingHttpServer(
+        http_server = pyjsonrpc.ThreadingHttpServer(
         server_address = (ip, port),
         RequestHandlerClass = RequestHandler)
+
+        http_server.account = Account()
+        http_server.miner = Miner(protocol)
         _print(" [RPC] Starting RPC server ...")
         _print(" [RPC] URL: http://" + ip + ":" + str(port))
-        self.account=Account()
-        self.miner=Miner()
-        self.protocol = protocol
-        self.http_server.serve_forever()
+        http_server.serve_forever()

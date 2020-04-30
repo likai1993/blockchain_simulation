@@ -5,12 +5,20 @@ from transaction import Transaction
 from account import Account
 from storage import BlockChainDB, UnTransactionDB, TransactionDB
 import json
+
+
+from twisted.internet import reactor
+from log import _print
+import network
+from network import NCProtocol
+
 REWARD = 20
 
 class Miner():
-    def __init__(self):
+    def __init__(self, protocol):
         self.publicKey = "" # account.publicKey #refer to the default account for the mining
         self.utx = []
+        self.protocol = protocol
 
     def reward(self):
         reward_transaction = Transaction('MINING', self.publicKey, REWARD)
@@ -28,7 +36,6 @@ class Miner():
         return gensis
 
     def mine(self):
-
         last_block = BlockChainDB().last()
         if len(last_block) == 0:
             last_block = self.gensisBlock().to_dict()
@@ -44,14 +51,12 @@ class Miner():
         # Save block and transactions to database.
         BlockChainDB().insert(newBlock.to_dict())
         TransactionDB().insert(newTransactions)
-        return json.dumps(newBlock.to_dict(),indent=2)
 
-if __name__ == '__main__':
-    minerAcc = Account("test1")
-    #minerAcc.create_account('123') ##password:123
-    minerAcc.unlock_account('123')
-    minerInstance = Miner(minerAcc)
-    while True:
-        print('New block generated')
-        print(minerInstance.mine())
-        time.sleep(10)
+        return newBlock.to_dict()
+
+    def startMining(self):
+        while True:
+            newBlock = self.mine()
+            _print(' [MINER] Mined new block:', newBlock['index'])
+            reactor.callFromThread(self.protocol.broadcastBlock, newBlock)
+            time.sleep(10)

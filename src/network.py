@@ -204,14 +204,14 @@ class NCProtocol(Protocol):
             self.transport.loseConnection()
 
     def broadcastTx(self, tx):
-        _print(" [APP] broadcasting tx", tx)
-        txMsg=message.createTxMsg(tx)
+        _print(" [P2P] broadcasting tx", tx)
+        txMsg=messages.createTxMsg(self.nodeid, tx)
         for client in self.factory.clients: 
             client.transport.write(txMsg)
 
     def broadcastBlock(self, block):
-        _print(" [APP] broadcasting block", block)
-        blockMsg=message.createBlockMsg(block)
+        _print(" [P2P] broadcasting block", block)
+        blockMsg=messages.createBlockMsg(self.nodeid, block)
         for client in self.factory.clients: 
             client.transport.write(blockMsg)
 
