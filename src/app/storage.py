@@ -210,7 +210,8 @@ class TransactionDB(BaseDB):
                 self.sig_insert(tx)
                 AccountDB().acc_insert(tx)
             else:
-                sender_balance = AccountDB().getAccountBalance(tx['sender'])['balance']
+                print("user tx", tx)
+                sender_balance = AccountDB().getAccountBalance(tx['sender'])
                 print(sender_balance)
                 print("verifying")
                 print(tx['amount'])
