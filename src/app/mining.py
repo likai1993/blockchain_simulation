@@ -1,15 +1,16 @@
 # coding:utf-8
-from block import Block
-import time
-from transaction import Transaction
-from account import Account
-from storage import BlockChainDB, UnTransactionDB, TransactionDB
+import time, thread
 import json
 
 from twisted.internet import reactor
 from log import _print
 import network
 from network import NCProtocol
+
+from block import Block
+from transaction import Transaction
+from account import Account
+from storage import BlockChainDB, UnTransactionDB, TransactionDB
 
 REWARD = 20
 
@@ -18,6 +19,8 @@ class Miner():
         self.publicKey = "" # account.publicKey #refer to the default account for the mining
         self.utx = []
         self.protocol = protocol
+        self.running=False
+        thread.start_new_thread(self.MiningWorker, ())
 
     def reward(self):
         reward_transaction = Transaction('MINING', self.publicKey, REWARD)
@@ -28,7 +31,7 @@ class Miner():
         gensis = Block(0, int(time.time()), [reward_transaction.to_dict()], "")
         nouce = gensis.pow()
         gensis.make(nouce)
-        print(gensis.to_dict())
+        #_print(' [MINER] Genesis:',gensis.to_dict())
         # Save block and transactions to database.
         BlockChainDB().insert(gensis.to_dict())
 
@@ -53,9 +56,18 @@ class Miner():
 
         return newBlock.to_dict()
 
+    def stopMining(self):
+        if self.running == True:
+            _print(' [MINER] Worker stops..')
+        self.running = False
+
     def startMining(self):
+        self.running = True
+
+    def MiningWorker(self):
         while True:
-            newBlock = self.mine()
-            _print(' [MINER] Mined new block:', newBlock['index'])
-            reactor.callFromThread(self.protocol.broadcastBlock, newBlock)
-            time.sleep(10)
+            if self.running:
+                newBlock = self.mine()
+                _print(' [MINER] Mined new block:', newBlock['index'])
+                reactor.callFromThread(self.protocol.broadcastBlock, newBlock)
+                time.sleep(10)

@@ -13,17 +13,27 @@ class RequestHandler(pyjsonrpc.HttpRequestHandler):
 	return publicKey
 
     @pyjsonrpc.rpcmethod
+    def loadAccount(self, _name, _passwd):
+	print("Keep your key file inside keystore dir")
+        publicKey = self.server.account.unlock(_name, _passwd)
+        return publicKey   
+
+    @pyjsonrpc.rpcmethod
     def unlock(self, _name, _passwd):
-        self.server.account.unlock(_name, _passwd)
-        return True
+        publicKey = self.server.account.unlock(_name, _passwd)
+        return publicKey
 
     @pyjsonrpc.rpcmethod
     def mining(self, _name, _passwd):
         self.server.account.unlock(_name, _passwd)
         self.server.miner.publicKey = self.server.account.publicKey
-        thread.start_new_thread(self.server.miner.startMining, ())
+        self.server.miner.startMining()
         return True
 
+    @pyjsonrpc.rpcmethod
+    def stopMining(self):
+        self.server.miner.stopMining()
+        return True
 
     @pyjsonrpc.rpcmethod
     def sendTransaction(self, _to, _amount):

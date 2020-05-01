@@ -6,3 +6,4 @@ clean:
 	rm -rf ./Data/
 	find ./ -name '*.pyc' |xargs rm -rf
 	mkdir -p ./Data/Keystore
+	touch ./Data/Keystore/testAccount

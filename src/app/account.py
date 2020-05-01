@@ -73,9 +73,10 @@ class Account():
                 remove(tmpfile)
                 self.publicKey = data['publicKey']
                 self.privateKey = data['privateKey']
-                return data
+                return data['publicKey']
         except:
             print("account not exist!")
+            return "not exist!"
 
     def relock(self):
         self.publicKey = ""

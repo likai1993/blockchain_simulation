@@ -1,5 +1,6 @@
 #!/usr/bin/python2.7
 import sys
+sys.path.append("./lib")
 sys.path.append("./rpc")
 sys.path.append("./vpn")
 sys.path.append("./app")
