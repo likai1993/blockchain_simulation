@@ -45,6 +45,7 @@ def on_new_client_thread(conn):
                         
     except (s.error, err_kbrd_intrpt):
         conn.close()
+        del clients_list[client_ip]
         print ("Client", client_addr, "disconnected")
 try:
     while True:
