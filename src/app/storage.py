@@ -176,11 +176,11 @@ class BlockChainDB(BaseDB):
                 TransactionDB().insert(newTransactions)
                 for tx in newTransactions:
                     UnTransactionDB().delete(tx['hash'])
-            else
+            else:
                 valid = False
-         else
-             valid = False 
-         return valid 
+        else:
+            valid = False 
+        return valid 
 
 class AccountDB(BaseDB):
     def set_path(self):
@@ -222,13 +222,13 @@ class TransactionDB(BaseDB):
                 break
         return ret 
 
-    def verify(self, txs)
+    def verify(self, txs):
         tmp_txs=[]
         if not isinstance(txs, list):
             txs = [txs]
         for tx in txs:
             if tx['sender'] == 'MINING':
-                if (not self.exist(tx)) and (not in tmp_txs):
+                if (not self.exist(tx)) and (tx not in tmp_txs):
                     tmp_txs.append(tx)
                 else:
                     return False
@@ -236,25 +236,25 @@ class TransactionDB(BaseDB):
                 #print("user tx", tx)
                 sender_balance = AccountDB().getAccountBalance(tx['sender'])
                 if sender_balance >= tx['amount'] and verify_transaction(tx):
-                    if (not self.exist(tx)) and (not in tmp_txs):
+                    if (not self.exist(tx)) and (tx not in tmp_txs):
                         tmp_txs.append(tx)
                     else:
                         return False
                 else:
                    return False
-          return True 
+        return True 
 
     def insert(self, txs):
         if not isinstance(txs, list):
             txs = [txs]
         for tx in txs:
             if tx['sender'] == 'MINING':
-                self.hash_insert(tx):
+                self.hash_insert(tx)
                 AccountDB().acc_insert(tx)
             else:
                 self.hash_insert(tx)
                 AccountDB().acc_insert(tx)
-          return True 
+        return True 
 
 class UnTransactionDB(TransactionDB):
 
