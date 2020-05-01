@@ -5,8 +5,6 @@ from log import _print
 import json
 from storage import BlockChainDB, UnTransactionDB, TransactionDB
 
-
-
 from twisted.internet import reactor
 from twisted.internet.protocol import Protocol, Factory
 from twisted.internet.endpoints import TCP4ClientEndpoint
@@ -193,8 +191,8 @@ class NCProtocol(Protocol):
 
     def receiveTx(self, msg):
         try:
-            _print(" [<] Recieved txMsg from peer " + self.remote_nodeid)
             newTx = messages.read_message_noverify(msg)['tx']
+            _print(" [<] Recieve tx " + newTx['hash'] +" from peer " + self.remote_nodeid)
             UnTransactionDB().insert(newTx)
             self.factory.knownTxs[self.remote_ip].append(newTx['hash'])
             # propagate to the unknown peers
@@ -209,8 +207,8 @@ class NCProtocol(Protocol):
     def receiveBlock(self, msg):
         try:
             newBlock = messages.read_message_noverify(msg)['block']
+            _print(" [<] Recieve block "+newBlock['hash']+" from peer " + self.remote_nodeid)
             newTransactions = newBlock['tx']
-            _print(" [<] Recieved blockMsg from peer " + self.remote_nodeid)
             BlockChainDB().insert(newBlock)
             TransactionDB().insert(newTransactions)
             for tx in newTransactions:
@@ -226,14 +224,14 @@ class NCProtocol(Protocol):
             _print(" [!] ERROR: Invalid block sign ", self.remote_ip)
 
     def broadcastTx(self, tx):
-        _print(" [P2P] broadcasting tx", tx)
+        _print(" [P2P] broadcasting tx", tx['hash'])
         txMsg=messages.createTxMsg(self.nodeid, tx)
         for client in self.factory.clients: 
             client.transport.write(txMsg)
             client.factory.knownTxs[client.remote_ip].append(tx['hash'])
 
     def broadcastBlock(self, block):
-        _print(" [P2P] broadcasting block", block)
+        _print(" [P2P] broadcasting block", block['hash'])
         blockMsg=messages.createBlockMsg(self.nodeid, block)
         for client in self.factory.clients: 
             client.transport.write(blockMsg)
