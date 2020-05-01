@@ -3,12 +3,11 @@
 #Unlock the account: get the secret key
 #Sign a transaction
 #Verify the transaction
-
 import sys
 sys.path.append("../p2p")
-
-
-
+from Crypto.PublicKey import RSA
+from Crypto.Signature import PKCS1_v1_5
+from Crypto.Hash import SHA256
 import Crypto.Random
 import binascii
 from os import stat, remove
@@ -18,7 +17,6 @@ import hashlib
 from storage import UnTransactionDB, AccountDB
 from transaction import Transaction
 import file_enc_dec as filecrypto
-from ecdsa import SigningKey,VerifyingKey, NIST192p
 
 from twisted.internet import reactor
 from log import _print
@@ -39,10 +37,12 @@ class Account():
         return self.__dict__
 
     def generate_keys(self):
-	private_key = SigningKey.generate(curve=NIST192p)
-        public_key = private_key.verifying_key
-        return private_key.to_string().encode("hex"), public_key.to_string().encode("hex")
-    
+        private_key = RSA.generate(1024, Crypto.Random.new().read)
+        public_key = private_key.publickey()
+
+        return (binascii.hexlify(private_key.exportKey(format='DER')).decode('ascii'),
+                binascii.hexlify(public_key.exportKey(format='DER')).decode('ascii'))
+
     def create_account(self, name, pwd):
         self.name = name
         bufferSize = 64 * 1024
@@ -98,16 +98,13 @@ class Account():
         return Transaction(sender,receiver,amount)
 
 
-
     def sign_transaction(self, transaction):
         if self.privateKey is not "":
-            signer_str = self.privateKey.decode("hex")
-            signer = SigningKey.from_string(signer_str, curve=NIST192p)
-            h = str(transaction.sender)+str(transaction.receiver)+str(transaction.amount)+str(transaction.time)
-            print("*****",h)
-            signature = signer.sign(bytes(h))
-            #transaction.signature = binascii.hexlify(signature).decode('ascii')
-            transaction.signature = signature.encode("hex")
+            signer = PKCS1_v1_5.new(RSA.importKey(
+                binascii.unhexlify(self.privateKey)))
+            h = SHA256.new((str(transaction.sender)+str(transaction.receiver)+str(transaction.amount)+str(transaction.time)).encode('utf8'))
+            signature = signer.sign(h)
+            transaction.signature = binascii.hexlify(signature).decode('ascii')
             transaction.hash = hashlib.sha256((str(transaction.sender)+str(transaction.receiver)+str(transaction.amount)+str(transaction.time)).encode('utf8')).hexdigest()
             return transaction
         else:
@@ -115,12 +112,11 @@ class Account():
 
 ## Transaction
     def verify_transaction(self, transaction):
-        public_key_str = transaction.sender.decode("hex")
-        public_key = VerifyingKey.from_string(public_key_str, curve=NIST192p)
-        h = bytes(str(transaction.sender) + str(transaction.receiver) + str(transaction.amount)+str(transaction.time))
-        print("*****",h)
-        verify_result = public_key.verify(transaction.signature.decode("hex"),h)
-        return verify_result
+        public_key = RSA.importKey(binascii.unhexlify(transaction.sender))
+        verifier = PKCS1_v1_5.new(public_key)
+        h = SHA256.new((str(transaction.sender) + str(transaction.receiver) +
+                        str(transaction.amount)+str(transaction.time)).encode('utf8'))
+        return verifier.verify(h, binascii.unhexlify(transaction.signature))
 
     def submitTransaction(self, transaction):
         if self.verify_transaction(transaction) is True:

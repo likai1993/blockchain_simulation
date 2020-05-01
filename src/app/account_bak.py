@@ -6,9 +6,9 @@
 
 import sys
 sys.path.append("../p2p")
-
-
-
+from Crypto.PublicKey import RSA
+from Crypto.Signature import PKCS1_v1_5
+from Crypto.Hash import SHA256
 import Crypto.Random
 import binascii
 from os import stat, remove
@@ -18,7 +18,7 @@ import hashlib
 from storage import UnTransactionDB, AccountDB
 from transaction import Transaction
 import file_enc_dec as filecrypto
-from ecdsa import SigningKey,VerifyingKey, NIST192p
+from ecdsa import SigningKey,VerifyingKey, NIST384p
 
 from twisted.internet import reactor
 from log import _print
@@ -39,7 +39,7 @@ class Account():
         return self.__dict__
 
     def generate_keys(self):
-	private_key = SigningKey.generate(curve=NIST192p)
+	private_key = SigningKey.generate(curve=NIST384p)
         public_key = private_key.verifying_key
         return private_key.to_string().encode("hex"), public_key.to_string().encode("hex")
     
@@ -102,7 +102,7 @@ class Account():
     def sign_transaction(self, transaction):
         if self.privateKey is not "":
             signer_str = self.privateKey.decode("hex")
-            signer = SigningKey.from_string(signer_str, curve=NIST192p)
+            signer = SigningKey.from_string(signer_str, curve=NIST384p)
             h = str(transaction.sender)+str(transaction.receiver)+str(transaction.amount)+str(transaction.time)
             print("*****",h)
             signature = signer.sign(bytes(h))
@@ -116,7 +116,7 @@ class Account():
 ## Transaction
     def verify_transaction(self, transaction):
         public_key_str = transaction.sender.decode("hex")
-        public_key = VerifyingKey.from_string(public_key_str, curve=NIST192p)
+        public_key = VerifyingKey.from_string(public_key_str, curve=NIST384p)
         h = bytes(str(transaction.sender) + str(transaction.receiver) + str(transaction.amount)+str(transaction.time))
         print("*****",h)
         verify_result = public_key.verify(transaction.signature.decode("hex"),h)

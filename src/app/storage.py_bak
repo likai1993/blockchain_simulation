@@ -13,9 +13,12 @@ Here is the Storage operation for the blockchain:
 import json
 import os
 from transaction import Transaction
+from Crypto.PublicKey import RSA
+from Crypto.Signature import PKCS1_v1_5
+from Crypto.Hash import SHA256
 import Crypto.Random
 import binascii
-from ecdsa import SigningKey,VerifyingKey, NIST192p
+
 BASEDBPATH = 'Data'
 BLOCKFILE = 'Blockstore'
 TXFILE = 'TXstore'
@@ -25,12 +28,11 @@ ACCOUNT = 'Account'
 
 
 def verify_transaction( transaction):
-    public_key_str = transaction.sender.decode("hex")
-    public_key = VerifyingKey.from_string(public_key_str, curve=NIST192p)
-    h = bytes(str(transaction['sender']) + str(transaction['receiver']) +
-                    str(transaction['amount']) + str(transaction['time']))
-    verify_result = public_key.verify(transaction['signature'].decode("hex"),h)
-    return verify_result
+    public_key = RSA.importKey(binascii.unhexlify(transaction['sender']))
+    verifier = PKCS1_v1_5.new(public_key)
+    h = SHA256.new((str(transaction['sender']) + str(transaction['receiver']) +
+                    str(transaction['amount']) + str(transaction['time'])).encode('utf8'))
+    return verifier.verify(h, binascii.unhexlify(transaction['signature']))
 
 class BaseDB():
     filepath = ''
