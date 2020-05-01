@@ -23,7 +23,6 @@ UNTXFILE = 'UTXpool'
 NODEFILE = 'Node'  # for p2p module to store the peer node
 ACCOUNT = 'Account'
 
-
 def verify_transaction( transaction):
     public_key_str = transaction['sender'].decode("hex")
     public_key = VerifyingKey.from_string(public_key_str, curve=NIST192p)
@@ -86,6 +85,7 @@ class BaseDB():
                 break
         if not exists:
             self.write(item)
+        return exists
 
     def sig_insert(self, item):
         exists = False
@@ -95,6 +95,7 @@ class BaseDB():
                 break
         if not exists:
             self.write(item)
+        return exists
 
     def acc_insert(self,tx):
         exists = False
@@ -131,7 +132,6 @@ class NodeDB(BaseDB):
     def set_path(self):
         self.filepath = NODEFILE
 
-
 class BlockChainDB(BaseDB):
 
     def set_path(self):
@@ -160,10 +160,27 @@ class BlockChainDB(BaseDB):
                 break
         return one
 
-
-
     def insert(self, item):
-         self.hash_insert(item)
+        self.hash_insert(item)
+
+    def verify(self, block):
+        valid = True
+        current_height=0
+        last_block = self.last()
+        if len(last_block) > 0:
+            current_height=last_block['index']
+        if block['index'] > current_height:
+            newTransactions = block['tx']
+            BlockChainDB().insert(block)
+            if TransactionDB().verify(newTransactions):
+                TransactionDB().insert(newTransactions)
+                for tx in newTransactions:
+                    UnTransactionDB().delete(tx['hash'])
+            else
+                valid = False
+         else
+             valid = False 
+         return valid 
 
 class AccountDB(BaseDB):
     def set_path(self):
@@ -197,23 +214,47 @@ class TransactionDB(BaseDB):
                 break
         return one
 
-    def insert(self, txs):
-        if not isinstance(txs,list):
+    def exists(self, hash):
+        ret = False 
+        for item in self.find_all():
+            if item['hash'] == hash:
+                ret = True
+                break
+        return ret 
+
+    def verify(self, txs)
+        tmp_txs=[]
+        if not isinstance(txs, list):
             txs = [txs]
         for tx in txs:
-
             if tx['sender'] == 'MINING':
-                self.sig_insert(tx)
-                AccountDB().acc_insert(tx)
+                if (not self.exist(tx)) and (not in tmp_txs):
+                    tmp_txs.append(tx)
+                else:
+                    return False
             else:
                 #print("user tx", tx)
                 sender_balance = AccountDB().getAccountBalance(tx['sender'])
                 if sender_balance >= tx['amount'] and verify_transaction(tx):
-                    #print("verified")
-                    self.sig_insert(tx)
-                    AccountDB().acc_insert(tx)
+                    if (not self.exist(tx)) and (not in tmp_txs):
+                        tmp_txs.append(tx)
+                    else:
+                        return False
                 else:
-                    continue
+                   return False
+          return True 
+
+    def insert(self, txs):
+        if not isinstance(txs, list):
+            txs = [txs]
+        for tx in txs:
+            if tx['sender'] == 'MINING':
+                self.hash_insert(tx):
+                AccountDB().acc_insert(tx)
+            else:
+                self.hash_insert(tx)
+                AccountDB().acc_insert(tx)
+          return True 
 
 class UnTransactionDB(TransactionDB):
 

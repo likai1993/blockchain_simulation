@@ -208,12 +208,8 @@ class NCProtocol(Protocol):
         try:
             newBlock = messages.read_message_noverify(msg)['block']
             _print(" [<] Recieve block "+newBlock['hash']+" from peer " + self.remote_nodeid)
-            newTransactions = newBlock['tx']
-            BlockChainDB().insert(newBlock)
-            TransactionDB().insert(newTransactions)
-            for tx in newTransactions:
-                UnTransactionDB().delete(tx['hash'])            
-            self.factory.knownBlocks[self.remote_ip].append(newBlock['hash'])
+            if BlockChainDB().verify(newBlock):
+                self.factory.knownBlocks[self.remote_ip].append(newBlock['hash'])
 
             # propagate to the unknown peers
             for client in self.factory.clients:

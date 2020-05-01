@@ -23,7 +23,8 @@ class Miner():
         thread.start_new_thread(self.MiningWorker, ())
 
     def reward(self):
-        reward_transaction = Transaction('MINING', self.publicKey, REWARD)
+	_hash = hashlib.sha256((str(time.time())).encode('utf8')).hexdigest()
+        reward_transaction = Transaction('MINING', self.publicKey, REWARD, _hash)
         return reward_transaction
 
     def gensisBlock(self):
@@ -48,11 +49,11 @@ class Miner():
         untxdb.clear()
         newBlock = Block(last_block['index'] + 1, int(time.time()), newTransactions, last_block['hash'])
         newBlock.miner = self.publicKey
-        nouce = newBlock.pow()
-        newBlock.make(nouce)
         # Save block and transactions to database.
         BlockChainDB().insert(newBlock.to_dict())
         TransactionDB().insert(newTransactions)
+        nouce = newBlock.pow()
+        newBlock.make(nouce)
 
         return newBlock.to_dict()
 
