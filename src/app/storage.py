@@ -77,9 +77,9 @@ class BaseDB():
             f.write('')
 
     def hash_insert(self, item):
+        #print("****",item)
         exists = False
         for i in self.find_all():
-            #print("****",i)
             if item['hash'] == i['hash']:
                 exists = True
                 break
@@ -223,26 +223,26 @@ class TransactionDB(BaseDB):
         return ret 
 
     def verify(self, txs):
-        tmp_txs=[]
+        validTxs=[]
         if not isinstance(txs, list):
             txs = [txs]
         for tx in txs:
             if tx['sender'] == 'MINING':
-                if (not self.exist(tx)) and (tx not in tmp_txs):
-                    tmp_txs.append(tx)
+                if (not self.exists(tx)) and (tx not in validTxs):
+                    validTxs.append(tx)
                 else:
-                    return False
+                    return None 
             else:
                 #print("user tx", tx)
                 sender_balance = AccountDB().getAccountBalance(tx['sender'])
                 if sender_balance >= tx['amount'] and verify_transaction(tx):
-                    if (not self.exist(tx)) and (tx not in tmp_txs):
-                        tmp_txs.append(tx)
+                    if (not self.exists(tx)) and (tx not in validTxs):
+                        validTxs.append(tx)
                     else:
-                        return False
+                        return None 
                 else:
-                   return False
-        return True 
+                   return None
+        return validTxs 
 
     def insert(self, txs):
         if not isinstance(txs, list):

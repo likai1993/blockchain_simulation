@@ -11,6 +11,7 @@ from block import Block
 from transaction import Transaction
 from account import Account
 from storage import BlockChainDB, UnTransactionDB, TransactionDB
+import hashlib
 
 REWARD = 20
 
@@ -24,7 +25,8 @@ class Miner():
 
     def reward(self):
 	_hash = hashlib.sha256((str(time.time())).encode('utf8')).hexdigest()
-        reward_transaction = Transaction('MINING', self.publicKey, REWARD, _hash)
+        reward_transaction = Transaction('MINING', self.publicKey, REWARD)
+        reward_transaction.hash = _hash
         return reward_transaction
 
     def gensisBlock(self):
@@ -47,13 +49,15 @@ class Miner():
         newTransactions = untxdb.find_all()
         newTransactions.append(rewardTx.to_dict())
         untxdb.clear()
-        newBlock = Block(last_block['index'] + 1, int(time.time()), newTransactions, last_block['hash'])
+        validTxs = TransactionDB().verify(newTransactions)
+        newBlock = Block(last_block['index'] + 1, int(time.time()), validTxs, last_block['hash'])
         newBlock.miner = self.publicKey
-        # Save block and transactions to database.
-        BlockChainDB().insert(newBlock.to_dict())
-        TransactionDB().insert(newTransactions)
         nouce = newBlock.pow()
         newBlock.make(nouce)
+
+        TransactionDB().insert(validTxs)
+        # Save block and transactions to database.
+        BlockChainDB().insert(newBlock.to_dict())
 
         return newBlock.to_dict()
 
