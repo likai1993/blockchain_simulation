@@ -47,6 +47,8 @@ class NCProtocol(Protocol):
         self.host_ip = h_ip.host + ":" + str(h_ip.port)
         self.factory.clients.append(self)
         self.dumpClient()
+        self.factory.knownTxs[self.remote_ip]=[] # avoid re-propagation, TODO size protection
+        self.factory.knownBlocks[self.remote_ip]=[] # avoid re-propagation, TODO size protection
 
     def print_peers(self):
         if len(self.factory.peers) == 0:
@@ -191,9 +193,15 @@ class NCProtocol(Protocol):
 
     def receiveTx(self, msg):
         try:
-            newtx = messages.read_message_noverify(msg)['tx']
-            UnTransactionDB().insert(newtx)
             _print(" [<] Recieved txMsg from peer " + self.remote_nodeid)
+            newTx = messages.read_message_noverify(msg)['tx']
+            UnTransactionDB().insert(newTx)
+            self.factory.knownTxs[self.remote_ip].append(newTx['hash'])
+            # propagate to the unknown peers
+            for client in self.factory.clients:
+                if newTx['hash'] not in self.factory.knownTxs[client.remote_ip]:
+                    client.transport.write(msg)
+
         except messages.InvalidSignatureError:
             _print(" [!] ERROR: Invalid tx sign ", self.remote_ip)
             self.transport.loseConnection()
@@ -207,6 +215,13 @@ class NCProtocol(Protocol):
             TransactionDB().insert(newTransactions)
             for tx in newTransactions:
                 UnTransactionDB().delete(tx['hash'])            
+            self.factory.knownBlocks[self.remote_ip].append(newBlock['hash'])
+
+            # propagate to the unknown peers
+            for client in self.factory.clients:
+                if newBlock['hash'] not in self.factory.knownBlocks[client.remote_ip]:
+                    client.transport.write(msg)
+
         except messages.InvalidSignatureError:
             _print(" [!] ERROR: Invalid block sign ", self.remote_ip)
 
@@ -215,12 +230,14 @@ class NCProtocol(Protocol):
         txMsg=messages.createTxMsg(self.nodeid, tx)
         for client in self.factory.clients: 
             client.transport.write(txMsg)
+            client.factory.knownTxs[client.remote_ip].append(tx['hash'])
 
     def broadcastBlock(self, block):
         _print(" [P2P] broadcasting block", block)
         blockMsg=messages.createBlockMsg(self.nodeid, block)
         for client in self.factory.clients: 
             client.transport.write(blockMsg)
+            client.factory.knownBlocks[client.remote_ip].append(block['hash'])
 
 # Split into NCRecvFactory and NCSendFactory (also reconsider the names...:/)
 class NCFactory(Factory):
@@ -231,6 +248,8 @@ class NCFactory(Factory):
     def startFactory(self):
         self.peers = {}
         self.clients = [] 
+        self.knownBlocks = {} 
+        self.knownTxs = {} 
         self.numProtocols = 0
         self.nodeid = cryptotools.generate_nodeid()[:10]
         _print(" [P2P] NODEID:", self.nodeid)

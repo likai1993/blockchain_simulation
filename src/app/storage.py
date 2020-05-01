@@ -109,7 +109,7 @@ class BaseDB():
                 self.update(data)
 
                 if tx['sender'] is not 'MINING':
-                    print("sender update")
+                    #print("sender update")
                     for j in data:
                         if j['publicKey'] == tx['sender']:
                             j['balance'] = j['balance'] - tx['amount']
@@ -119,7 +119,7 @@ class BaseDB():
         if not exists:
             new_acc = {'publicKey':tx['receiver'],'balance':tx['amount']}
             if tx['sender'] is not 'MINING':
-                print("sender update")
+                #print("sender update")
                 for m in data:
                     if m['publicKey'] == tx['sender']:
                         m['balance'] = m['balance'] - tx['amount']

@@ -1,6 +1,6 @@
 #!/usr/bin/python2.7
 import sys
-sys.path.append("./lib")
+sys.path.append("./p2p")
 sys.path.append("./rpc")
 sys.path.append("./vpn")
 sys.path.append("./app")
@@ -43,7 +43,7 @@ if __name__ == "__main__":
         thread.start_new_thread(setUpVPNClient, (args.listen, args.brokeraddr, args.brokerport, ))
         time.sleep(1)
         endpoint = TCP4ServerEndpoint(reactor, args.port, interface=args.listen)
-        _print(" [P2P] LISTEN:", args.listen, ":", args.port)
+        _print(" [P2P] LISTEN ON:", args.listen, ":", args.port)
         ncfactory = NCFactory(args.port)
         endpoint.listen(ncfactory)
 
