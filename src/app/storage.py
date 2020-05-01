@@ -25,7 +25,7 @@ ACCOUNT = 'Account'
 
 
 def verify_transaction( transaction):
-    public_key_str = transaction.sender.decode("hex")
+    public_key_str = transaction['sender'].decode("hex")
     public_key = VerifyingKey.from_string(public_key_str, curve=NIST192p)
     h = bytes(str(transaction['sender']) + str(transaction['receiver']) +
                     str(transaction['amount']) + str(transaction['time']))
