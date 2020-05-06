@@ -154,7 +154,7 @@ class BlockChainDB(BaseDB):
                     i = block
                     exist = True
                     self.update(data)
-                else if i['timestamp'] == block['timestamp']:
+                elif i['timestamp'] == block['timestamp']:
                     if i['nouce'] < block['nouce']:
                         i = block
                         exist = True
@@ -196,7 +196,7 @@ class BlockChainDB(BaseDB):
                     UnTransactionDB().delete(tx['hash'])
             else:
                 valid = False
-        else if block['index'] >= current_height - 6:
+        elif block['index'] >= current_height - 6:
             #Todo: replace the block
             valid = self.updateByIndex(block)
         else:            
