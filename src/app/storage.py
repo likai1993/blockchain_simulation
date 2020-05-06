@@ -144,6 +144,24 @@ class BlockChainDB(BaseDB):
         else:
             return []
 
+    def updateByIndex(self, block):
+        exist = False
+        data = self.read()
+        for i in data:
+            if i['index'] == block['index']:
+                if i['timestamp'] > block['timestamp']:
+                # update block info
+                    i = block
+                    exist = True
+                    self.update(data)
+                else if i['timestamp'] == block['timestamp']:
+                    if i['nouce'] < block['nouce']:
+                        i = block
+                        exist = True
+                        self.update(data)
+        return exist
+
+
     def find(self, hash):
         one = {}
         for item in self.find_all():
@@ -178,7 +196,10 @@ class BlockChainDB(BaseDB):
                     UnTransactionDB().delete(tx['hash'])
             else:
                 valid = False
-        else:
+        else if block['index'] >= current_height - 6:
+            #Todo: replace the block
+            valid = self.updateByIndex(block)
+        else:            
             valid = False 
         return valid 
 
