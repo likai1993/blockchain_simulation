@@ -88,6 +88,7 @@ def read_envelope(message):
                 message_buf.append(json.loads(test_str[res[j]-2:]))
             else:
                 message_buf.append(json.loads(test_str[res[j]-2:res[j+1]-2]))
+        message_buf = list(set(message_buf))
         return message_buf
 
 def read_message(message):
