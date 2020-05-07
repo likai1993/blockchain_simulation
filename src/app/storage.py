@@ -97,6 +97,20 @@ class BaseDB():
             self.write(item)
         return exists
 
+    def acc_rollback(self, tx):
+        data = self.read
+        for i in: data:
+            if i['publicKey'] == tx['receiver']:
+                i['balance'] = i['balance'] - tx['amount']
+                self.update(data)
+                if tx['sender'] is not 'MINING':
+                    if j['publicKey'] == tx['sender']:
+                        j['balance'] = j['balance'] + tx['amount']
+                        self.update(data)
+                        break
+                break
+
+
     def acc_insert(self,tx):
         exists = False
         data = self.read()
@@ -159,6 +173,12 @@ class BlockChainDB(BaseDB):
                         i = block
                         exist = True
                         self.update(data)
+            if exist is True:
+                #account balance rollback
+                for tx in block['tx']:
+                    AccountDB.acc_rollback(tx)
+                break
+                
         return exist
 
 
