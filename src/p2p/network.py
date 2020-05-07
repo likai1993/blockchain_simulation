@@ -84,20 +84,20 @@ class NCProtocol(Protocol):
                 if self.state in ["GETHELLO", "SENTHELLO"]:
                     # Force first message to be HELLO or crash
                     if envelope['msgtype'] == 'hello':
-                        self.handle_HELLO(line)
+                        self.handle_HELLO(json.dumps(envelope))
                     else:
                         _print(" [!] Ignoring", envelope['msgtype'], "in", self.state)
                 else:
                     if envelope['msgtype'] == 'ping':
-                        self.handle_PING(line)
+                        self.handle_PING(json.dumps(envelope))
                     elif envelope['msgtype'] == 'pong':
-                        self.handle_PONG(line)
+                        self.handle_PONG(json.dumps(envelope))
                     elif envelope['msgtype'] == 'addr':
-                        self.handle_ADDR(line)
+                        self.handle_ADDR(json.dumps(envelope))
                     elif envelope['msgtype'] == 'tx':
-                        self.receiveTx(line)
+                        self.receiveTx(json.dumps(envelope))
                     elif envelope['msgtype'] == 'block':
-                        self.receiveBlock(line)
+                        self.receiveBlock(json.dumps(envelope))
 
     def send_PING(self):
         _print(" [>] PING   to", self.remote_nodeid, "at", self.remote_ip)
