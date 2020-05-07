@@ -75,12 +75,10 @@ def createBlockMsg(nodeid, block):
 # -------
 
 def read_envelope(message):
-    print "******test******", type(message)
     #TODO issue here: sometimes receive two dict in one message
     try:
         return [json.loads(message)]
     except:
-        print "******handling error******", message
         message_buf = []
         res = [i for i in range(len(message)) if message.startswith("msgtype", i)]
         for j in range(len(res)):

@@ -210,11 +210,10 @@ class NCProtocol(Protocol):
             _print(" [<] Recieve block "+newBlock['hash']+" from peer " + self.remote_nodeid+" index:"+ str(newBlock['index']) + " timestamp:"+ str(newBlock['timestamp']))
             if BlockChainDB().verify(newBlock):
                 self.factory.knownBlocks[self.remote_ip].append(newBlock['hash'])
-
-            # propagate to the unknown peers
-            for client in self.factory.clients:
-                if newBlock['hash'] not in self.factory.knownBlocks[client.remote_ip]:
-                    client.transport.write(msg)
+                # only propagate valid block to peers 
+                for client in self.factory.clients:
+                    if newBlock['hash'] not in self.factory.knownBlocks[client.remote_ip]:
+                        client.transport.write(msg)
 
         except messages.InvalidSignatureError:
             _print(" [!] ERROR: Invalid block sign ", self.remote_ip)
