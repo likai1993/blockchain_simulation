@@ -129,14 +129,13 @@ class NCProtocol(Protocol):
                 remote_lsnport = str(node[2])
                 if node[0] == self.nodeid:
                     _print(" [!] Not connecting to " + node[0] + ": thats me!")
-                    #return
+                    continue
                 if node[3] == "INBOUND":
                     port = remote_lsnport
                     _print(" [P2P] INBOUND connecting to " + host + ":" + remote_lsnport)
-                    #return
                 if node[0] in self.factory.peers:
                     _print(" [P2P] Not connecting to " + node[0]  + ": already connected")
-                    #return
+                    continue
                 _print(" [P2P] Trying to connect to peer " + node[0] + " " + node[1])
                 point = TCP4ClientEndpoint(reactor, host, int(port))
                 d = connectProtocol(point, NCProtocol(self.factory, "SENDHELLO", "OUTBOUND"))
