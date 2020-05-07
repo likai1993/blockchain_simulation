@@ -99,7 +99,7 @@ class BaseDB():
 
     def acc_rollback(self, tx):
         data = self.read
-        for i in: data:
+        for i in data:
             if i['publicKey'] == tx['receiver']:
                 i['balance'] = i['balance'] - tx['amount']
                 self.update(data)
