@@ -207,7 +207,7 @@ class NCProtocol(Protocol):
     def receiveBlock(self, msg):
         try:
             newBlock = messages.read_message_noverify(msg)['block']
-            _print(" [<] Recieve block "+newBlock['hash']+" from peer " + self.remote_nodeid)
+            _print(" [<] Recieve block "+newBlock['hash']+" from peer " + self.remote_nodeid+" index:"+ str(newBlock['index']) + " timestamp:"+ str(newBlock['timestamp']))
             if BlockChainDB().verify(newBlock):
                 self.factory.knownBlocks[self.remote_ip].append(newBlock['hash'])
 
@@ -227,7 +227,7 @@ class NCProtocol(Protocol):
             client.factory.knownTxs[client.remote_ip].append(tx['hash'])
 
     def broadcastBlock(self, block):
-        _print(" [P2P] broadcasting block", block['hash'])
+        _print(" [P2P] broadcasting block"+str(block['hash'])+" index:"+ str(block['index'])+" timestamp"+str(block['timestamp']))
         blockMsg=messages.createBlockMsg(self.nodeid, block)
         for client in self.factory.clients: 
             client.transport.write(blockMsg)
