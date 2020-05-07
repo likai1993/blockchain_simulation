@@ -79,24 +79,25 @@ class NCProtocol(Protocol):
     def dataReceived(self, data):
         for line in data.splitlines():
             line = line.strip()
-            envelope = messages.read_envelope(line)
-            if self.state in ["GETHELLO", "SENTHELLO"]:
-                # Force first message to be HELLO or crash
-                if envelope['msgtype'] == 'hello':
-                    self.handle_HELLO(line)
+            envelopes = messages.read_envelope(line)
+            for envelope in envelopes:
+                if self.state in ["GETHELLO", "SENTHELLO"]:
+                    # Force first message to be HELLO or crash
+                    if envelope['msgtype'] == 'hello':
+                        self.handle_HELLO(line)
+                    else:
+                        _print(" [!] Ignoring", envelope['msgtype'], "in", self.state)
                 else:
-                    _print(" [!] Ignoring", envelope['msgtype'], "in", self.state)
-            else:
-                if envelope['msgtype'] == 'ping':
-                    self.handle_PING(line)
-                elif envelope['msgtype'] == 'pong':
-                    self.handle_PONG(line)
-                elif envelope['msgtype'] == 'addr':
-                    self.handle_ADDR(line)
-                elif envelope['msgtype'] == 'tx':
-                    self.receiveTx(line)
-                elif envelope['msgtype'] == 'block':
-                    self.receiveBlock(line)
+                    if envelope['msgtype'] == 'ping':
+                        self.handle_PING(line)
+                    elif envelope['msgtype'] == 'pong':
+                        self.handle_PONG(line)
+                    elif envelope['msgtype'] == 'addr':
+                        self.handle_ADDR(line)
+                    elif envelope['msgtype'] == 'tx':
+                        self.receiveTx(line)
+                    elif envelope['msgtype'] == 'block':
+                        self.receiveBlock(line)
 
     def send_PING(self):
         _print(" [>] PING   to", self.remote_nodeid, "at", self.remote_ip)
