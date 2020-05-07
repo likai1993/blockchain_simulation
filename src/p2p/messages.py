@@ -82,7 +82,7 @@ def read_envelope(message):
     except:
         print "******handling error******", message
         message_buf = []
-        res = [i for i in range(len(message)) if message.startswith("message_type", i)]
+        res = [i for i in range(len(message)) if message.startswith("msgtype", i)]
         for j in range(len(res)):
             if j == len(res) - 1:
                 message_buf.append(json.loads(test_str[res[j]-2:]))
