@@ -75,6 +75,7 @@ def createBlockMsg(nodeid, block):
 # -------
 
 def read_envelope(message):
+    print "******test******", message
     return json.loads(message)
 
 def read_message(message):
