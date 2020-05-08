@@ -39,10 +39,16 @@ class setUpVPNClient(object):
                     #_print(" [VPN] server: {} --> {}".format(pkt.src,pkt.dst))
                     if len(data) > 0:
                         #_print(" [VPN] to tun", len(data))
-                        os.write(tun, data)
+                        try:
+                            os.write(tun, data)
+                        except:
+                            pass
                 if fd is tun:
                     packet = os.read(tun, 4096)
                     if len(packet) > 0:
-                        pkt = IP(packet)
-                        #_print(" [VPN] tun ==>: {} --> {}".format(pkt.src, pkt.dst))
-                        sock.send(packet)
+                        try:
+                            pkt = IP(packet)
+                            #_print(" [VPN] tun ==>: {} --> {}".format(pkt.src, pkt.dst))
+                            sock.send(packet)
+                        except:
+                            pass
