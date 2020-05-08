@@ -26,7 +26,7 @@ class setUpVPNClient(object):
         os.system("ip route add "+network_id+".0.0/16 dev {}".format(ifname))
         sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         sock.connect((SERVER_IP,SERVER_PROT))
-        sock.send(ip)
+        sock.send(ip.encode('UTF-8'))
         fds = [sock, tun]
         while True:
             #setup routing table
