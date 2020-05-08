@@ -55,9 +55,9 @@ class Miner():
         nouce = newBlock.pow()
         newBlock.make(nouce)
 
-        TransactionDB().insert(validTxs)
+		#TransactionDB().insert(validTxs)
         # Save block and transactions to database.
-        BlockChainDB().insert(newBlock.to_dict())
+        BlockChainDB().verify(newBlock.to_dict())
 
         return newBlock.to_dict()
 
