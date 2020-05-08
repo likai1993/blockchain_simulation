@@ -34,7 +34,7 @@ class NCProtocol(Protocol):
 
     def dumpClient(self):
         if len(self.factory.clients) > 0:
-            _print(" [p2p] connected clients")
+            _print(" [p2p] Connected clients")
             for clients in self.factory.clients: 
                 _print("    ", clients.remote_ip)
 
@@ -195,7 +195,7 @@ class NCProtocol(Protocol):
     def receiveTx(self, msg):
         try:
             newTx = messages.read_message_noverify(msg)['tx']
-            _print(" [<] Recieve tx " + newTx['hash'] +" from peer " + self.remote_nodeid)
+            _print(" [<] Recieve tx=" + newTx['hash'] +" from peer " + self.remote_nodeid)
             UnTransactionDB().insert(newTx)
             self.factory.knownTxs[self.remote_ip].append(newTx['hash'])
             # propagate to the unknown peers
@@ -210,7 +210,7 @@ class NCProtocol(Protocol):
     def receiveBlock(self, msg):
         try:
             newBlock = messages.read_message_noverify(msg)['block']
-            _print(" [<] Recieve block "+newBlock['hash']+" from peer " + self.remote_nodeid+" index:"+ str(newBlock['index']) + " timestamp:"+ str(newBlock['timestamp']))
+            _print(" [<] Recieve block="+newBlock['hash']+" from peer " + self.remote_nodeid+", index="+ str(newBlock['index']) + ", timestamp="+ str(newBlock['timestamp']) + ", miner="+str(block['miner']))
             if BlockChainDB().verify(newBlock):
                 self.factory.knownBlocks[self.remote_ip].append(newBlock['hash'])
                 # only propagate valid block to peers 
@@ -224,14 +224,14 @@ class NCProtocol(Protocol):
             pass
 
     def broadcastTx(self, tx):
-        _print(" [P2P] broadcasting tx", tx['hash'])
+        _print(" [P2P] Broadcast tx=", tx['hash'])
         txMsg=messages.createTxMsg(self.nodeid, tx)
         for client in self.factory.clients: 
             client.transport.write(txMsg)
             client.factory.knownTxs[client.remote_ip].append(tx['hash'])
 
     def broadcastBlock(self, block):
-        _print(" [P2P] broadcasting block"+str(block['hash'])+" index:"+ str(block['index'])+" timestamp"+str(block['timestamp']))
+        _print(" [P2P] Broadcast block="+str(block['hash'])+", index="+ str(block['index'])+", miner="+str(block['miner']))
         blockMsg=messages.createBlockMsg(self.nodeid, block)
         for client in self.factory.clients: 
             client.transport.write(blockMsg)
