@@ -210,7 +210,7 @@ class NCProtocol(Protocol):
     def receiveBlock(self, msg):
         try:
             newBlock = messages.read_message_noverify(msg)['block']
-            _print(" [<] Recieve block="+newBlock['hash']+" from peer " + self.remote_nodeid+", index="+ str(newBlock['index']) + ", timestamp="+ str(newBlock['timestamp']) + ", miner="+str(block['miner']))
+            _print(" [<] Recieve block="+newBlock['hash']+" from peer " + self.remote_nodeid+", index="+ str(newBlock['index']) + ", timestamp="+ str(newBlock['timestamp']) + ", miner="+str(newBlock['miner']))
             if BlockChainDB().verify(newBlock):
                 self.factory.knownBlocks[self.remote_ip].append(newBlock['hash'])
                 # only propagate valid block to peers 
