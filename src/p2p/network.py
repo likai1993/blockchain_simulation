@@ -79,25 +79,28 @@ class NCProtocol(Protocol):
     def dataReceived(self, data):
         for line in data.splitlines():
             line = line.strip()
-            envelopes = messages.read_envelope(line)
-            for envelope in envelopes:
-                if self.state in ["GETHELLO", "SENTHELLO"]:
-                    # Force first message to be HELLO or crash
-                    if envelope['msgtype'] == 'hello':
-                        self.handle_HELLO(json.dumps(envelope))
+            try:
+                envelopes = messages.read_envelope(line)
+                for envelope in envelopes:
+                    if self.state in ["GETHELLO", "SENTHELLO"]:
+                        # Force first message to be HELLO or crash
+                        if envelope['msgtype'] == 'hello':
+                            self.handle_HELLO(json.dumps(envelope))
+                        else:
+                            _print(" [!] Ignoring", envelope['msgtype'], "in", self.state)
                     else:
-                        _print(" [!] Ignoring", envelope['msgtype'], "in", self.state)
-                else:
-                    if envelope['msgtype'] == 'ping':
-                        self.handle_PING(json.dumps(envelope))
-                    elif envelope['msgtype'] == 'pong':
-                        self.handle_PONG(json.dumps(envelope))
-                    elif envelope['msgtype'] == 'addr':
-                        self.handle_ADDR(json.dumps(envelope))
-                    elif envelope['msgtype'] == 'tx':
-                        self.receiveTx(json.dumps(envelope))
-                    elif envelope['msgtype'] == 'block':
-                        self.receiveBlock(json.dumps(envelope))
+                        if envelope['msgtype'] == 'ping':
+                            self.handle_PING(json.dumps(envelope))
+                        elif envelope['msgtype'] == 'pong':
+                            self.handle_PONG(json.dumps(envelope))
+                        elif envelope['msgtype'] == 'addr':
+                            self.handle_ADDR(json.dumps(envelope))
+                        elif envelope['msgtype'] == 'tx':
+                            self.receiveTx(json.dumps(envelope))
+                        elif envelope['msgtype'] == 'block':
+                            self.receiveBlock(json.dumps(envelope))
+            except:
+                pass
 
     def send_PING(self):
         _print(" [>] PING   to", self.remote_nodeid, "at", self.remote_ip)
@@ -217,6 +220,8 @@ class NCProtocol(Protocol):
 
         except messages.InvalidSignatureError:
             _print(" [!] ERROR: Invalid block sign ", self.remote_ip)
+        except:
+            pass
 
     def broadcastTx(self, tx):
         _print(" [P2P] broadcasting tx", tx['hash'])
