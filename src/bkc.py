@@ -28,8 +28,8 @@ parser = argparse.ArgumentParser(description="blockchain_simulation")
 parser.add_argument('--port', type=int, default=DEFAULT_PORT)
 parser.add_argument('--rpcport', type=int, default=DEFAULT_RPCPORT)
 parser.add_argument('--listen', default="192.168.53.5")
-parser.add_argument('--brokeraddr', default="128.230.208.73")
-parser.add_argument('--brokerport', default=55555)
+parser.add_argument('--imAddr', default="128.230.208.73")
+parser.add_argument('--imPort', default=55555)
 parser.add_argument('--bootstrap', action="append", default=[])
 
 def protoBroadcast(_protocol, data):
@@ -40,7 +40,7 @@ def protoBroadcast(_protocol, data):
 if __name__ == "__main__":
     args = parser.parse_args()
     try:
-        thread.start_new_thread(setUpVPNClient, (args.listen, args.brokeraddr, args.brokerport, ))
+        thread.start_new_thread(setUpVPNClient, (args.listen, args.imAddr, args.imPort, ))
         time.sleep(1)
         endpoint = TCP4ServerEndpoint(reactor, args.port, interface=args.listen)
         _print(" [P2P] LISTEN ON:", args.listen, ":", args.port)
