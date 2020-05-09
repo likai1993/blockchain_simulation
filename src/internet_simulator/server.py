@@ -70,4 +70,4 @@ while True:
         print ("Server is shutting down...")
         sys.exit(0)
     except:
-        raise
+        pass
